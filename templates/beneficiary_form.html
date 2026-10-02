@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Beneficiary' if beneficiary else 'Register Beneficiary' }} - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('beneficiaries') if not beneficiary else url_for('beneficiary_detail', id=beneficiary.id) }}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold text-primary-dark mb-0">
+                    <i class="bi bi-person-{% if beneficiary %}pencil{% else %}plus{% endif %} me-2"></i>
+                    {{ 'Edit Beneficiary' if beneficiary else 'Register Beneficiary' }}
+                </h2>
+                <p class="text-muted mb-0">
+                    {% if beneficiary %}Updating {{ beneficiary.full_name }} ({{ beneficiary.health_id }})
+                    {% else %}Fill in the beneficiary details to add them to a household{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form action="{% if beneficiary %}{{ url_for('edit_beneficiary', id=beneficiary.id) }}{% else %}{{ url_for('add_beneficiary') }}{% endif %}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="household_id" class="form-label fw-semibold">Household <span class="text-danger">*</span></label>
+                            <select class="form-select" id="household_id" name="household_id" required>
+                                <option value="">Select Household</option>
+                                {% if households %}
+                                    {% for h in households %}
+                                    <option value="{{ h.id }}"
+                                        {% if beneficiary and beneficiary.household_id == h.id %}selected
+                                        {% elif not beneficiary and request.args.get('household_id')|string == h.id|string %}selected{% endif %}>
+                                        {{ h.household_number }} - {{ h.head_name }}
+                                    </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="health_id" class="form-label fw-semibold">
+                                Health ID {% if not beneficiary %}<span class="text-muted fw-normal">(Auto-suggested)</span>{% else %}<span class="text-muted fw-normal">(immutable)</span>{% endif %}
+                            </label>
+                            <input type="text" class="form-control {% if beneficiary %}bg-light{% endif %}" id="health_id" name="health_id"
+                                   value="{% if beneficiary %}{{ beneficiary.health_id }}{% else %}{{ suggested_health_id or auto_health_id or '' }}{% endif %}"
+                                   placeholder="HID-XXXXX" {% if beneficiary %}readonly{% endif %}>
+                        </div>
+                        <div class="col-12">
+                            <label for="full_name" class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" required
+                                   value="{{ beneficiary.full_name if beneficiary else '' }}" placeholder="Full Name">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dob" class="form-label fw-semibold">Date of Birth <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="dob" name="dob" required
+                                   value="{{ beneficiary.dob.strftime('%Y-%m-%d') if beneficiary and beneficiary.dob else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold d-block">Gender <span class="text-danger">*</span></label>
+                            <div class="pt-2">
+                                {% for value, label in [('Female','Female'), ('Male','Male'), ('Other','Other')] %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="gender" id="gender_{{ value|lower }}"
+                                           value="{{ value }}" required
+                                           {% if beneficiary and beneficiary.gender == value %}checked{% endif %}>
+                                    <label class="form-check-label" for="gender_{{ value|lower }}">{{ label }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mobile" class="form-label fw-semibold">Mobile Number</label>
+                            <input type="text" class="form-control" id="mobile" name="mobile"
+                                   value="{{ beneficiary.mobile if beneficiary and beneficiary.mobile else '' }}" placeholder="10-digit number">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="blood_group" class="form-label fw-semibold">Blood Group</label>
+                            <select class="form-select" id="blood_group" name="blood_group">
+                                <option value="">Select Blood Group</option>
+                                {% for bg in ['A+','A-','B+','B-','O+','O-','AB+','AB-'] %}
+                                <option value="{{ bg }}" {% if beneficiary and beneficiary.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="is_disabled" name="is_disabled"
+                                       {% if beneficiary and beneficiary.is_disabled %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="is_disabled">
+                                    Has Disability / Specially Abled
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-none" id="disability_details_container">
+                            <label for="disability_details" class="form-label fw-semibold">Disability Details</label>
+                            <textarea class="form-control" id="disability_details" name="disability_details" rows="2"
+                                      placeholder="Specify nature or details of disability">{{ beneficiary.disability_details if beneficiary and beneficiary.disability_details else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    {% if not beneficiary %}
+                    <!-- Field-worker shortcut: a new registration is often a new
+                         pregnancy, so let them record the pregnancy in the same
+                         step instead of navigating to Maternal and re-selecting
+                         the person they just created. -->
+                    <div class="mt-3 p-3 bg-light rounded border" id="maternal_shortcut">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="register_maternal_now"
+                                   name="register_maternal_now">
+                            <label class="form-check-label fw-semibold" for="register_maternal_now">
+                                <i class="bi bi-heart-pulse me-1"></i> This person is pregnant &mdash; open the maternal form next
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1 ms-4">
+                            Skips the trip to the Maternal module. Available for female registrations.
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if beneficiary and session.get('role') in ['admin', 'supervisor'] %}
+                            <button type="submit" class="btn btn-outline-danger"
+                                    formaction="{{ url_for('delete_beneficiary', id=beneficiary.id) }}"
+                                    formmethod="POST"
+                                    onclick="return confirm('Delete {{ beneficiary.full_name }} and every record linked to them? This cannot be undone.');">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('beneficiaries') if not beneficiary else url_for('beneficiary_detail', id=beneficiary.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>
+                                {{ 'Save Changes' if beneficiary else 'Register Beneficiary' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const disabledCheckbox = document.getElementById('is_disabled');
+        const detailsContainer = document.getElementById('disability_details_container');
+        if (disabledCheckbox && detailsContainer) {
+            // Reveal the details box up-front when editing an existing record.
+            if (disabledCheckbox.checked) {
+                detailsContainer.classList.remove('d-none');
+            }
+            disabledCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    detailsContainer.classList.remove('d-none');
+                } else {
+                    detailsContainer.classList.add('d-none');
+                }
+            });
+        }
+
+        // The maternal shortcut only applies to female registrations, so hide it
+        // as soon as another gender is picked rather than silently ignoring it.
+        const maternalShortcut = document.getElementById('maternal_shortcut');
+        const maternalCheckbox = document.getElementById('register_maternal_now');
+        if (maternalShortcut && maternalCheckbox) {
+            const genderInputs = document.querySelectorAll('input[name="gender"]');
+            const sync = function () {
+                const female = document.getElementById('gender_female');
+                if (female && !female.checked) {
+                    maternalCheckbox.checked = false;
+                    maternalShortcut.classList.add('d-none');
+                } else {
+                    maternalShortcut.classList.remove('d-none');
+                }
+            };
+            genderInputs.forEach(function (input) { input.addEventListener('change', sync); });
+            sync();
+        }
+    });
+</script>
+{% endblock %}

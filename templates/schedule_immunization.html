@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Immunization - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+        <h2 class="fw-bold text-primary-dark mb-1"><i class="bi bi-calendar-plus me-2"></i>Schedule Immunization</h2>
+        <p class="text-muted mb-0">
+            Generate the doses a registered child is due, from the national schedule
+        </p>
+    </div>
+    <div class="flex-shrink-0">
+        <a href="{{ url_for('immunizations') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Schedule
+        </a>
+    </div>
+</div>
+
+{% if not child_records %}
+<!-- Nothing to schedule against yet. -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-emoji-smile fs-1 text-muted d-block mb-3"></i>
+        <h5 class="fw-semibold">No child records yet</h5>
+        <p class="text-muted mb-3">
+            A vaccination schedule is calculated from a child's date of birth, so
+            register the child in the Maternal &amp; Child module first.
+        </p>
+        <a href="{{ url_for('add_child') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Register Child Record
+        </a>
+    </div>
+</div>
+{% else %}
+
+<div class="row g-4">
+    <!-- Step 1: pick the child and generate -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-person-check me-2"></i>Step 1 — Choose the Child</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="child_id" class="form-label fw-bold">
+                            Registered child <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="child_id" name="child_id" required>
+                            {% for c in child_records %}
+                                {% if c.beneficiary %}
+                                <option value="{{ c.id }}" data-born="{{ c.birth_date.isoformat() }}"
+                                        data-dob="{{ c.birth_date.strftime('%d %b %Y') }}">
+                                    {{ c.beneficiary.full_name }} — born {{ c.birth_date.strftime('%d %b %Y') }}
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Only children with a registered birth date can have a schedule generated.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-magic me-1"></i> Generate Schedule
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-3 small">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>How it works.</strong> Each vaccine dose falls due a fixed number of
+            months after birth. Generating reads the child's date of birth, works out every
+            due date, and queues the doses that are not already on file. Doses already past
+            their date are filed as <strong>Overdue</strong> so they surface on the filter.
+            Running it twice adds nothing.
+        </div>
+    </div>
+
+    <!-- Step 2: reference schedule -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-list-check me-2"></i>Step 2 — National Schedule</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Vaccine</th>
+                                <th class="text-center">Due at</th>
+                                <th class="text-center">Date</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in vaccines if v.target_age_months >= 0 %}
+                            <tr>
+                                <td class="fw-semibold">{{ v.vaccine_name }}</td>
+                                <td class="text-center">
+                                    {% if v.target_age_months == 0 %}
+                                        <span class="badge bg-success">At birth</span>
+                                    {% elif v.target_age_months >= 12 %}
+                                        <span class="badge bg-primary">{{ (v.target_age_months // 12)|int }} yr</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark">{{ v.target_age_months }} mo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center js-due-date" data-months="{{ v.target_age_months }}">—</td>
+                                <td class="text-muted small">{{ v.description or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Fill in the due date for the selected child, so the reference table shows
+// real dates rather than only "due at 2 months". This mirrors the server-side
+// add_months() rule in app.py; the server remains the source of truth and
+// recomputes every date when the schedule is actually generated.
+(function () {
+    const select = document.getElementById('child_id');
+    const cells = document.querySelectorAll('.js-due-date');
+    if (!select || !cells.length) return;
+
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    function fill() {
+        const option = select.options[select.selectedIndex];
+        if (!option || !option.dataset.born) return;
+        const born = option.dataset.born.split('-').map(Number);
+
+        cells.forEach(cell => {
+            const months = parseInt(cell.dataset.months, 10);
+            // Mirror of add_months(): advance whole months, clamp the day to the
+            // last valid day of the resulting month.
+            const idx = born[1] - 1 + months;
+            const year = born[0] + Math.floor(idx / 12);
+            const month = (idx % 12) + 1;
+            const last = new Date(year, month, 0).getDate();
+            cell.textContent = `${String(Math.min(born[2], last)).padStart(2, '0')} ${MONTHS[month - 1]} ${year}`;
+        });
+    }
+
+    select.addEventListener('change', fill);
+    fill();
+})();
+</script>
+{% endblock %}

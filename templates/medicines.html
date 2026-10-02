@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Medicine Inventory & Distribution - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+        <h2 class="fw-bold text-primary-dark mb-1"><i class="bi bi-capsule me-2"></i>Medicine Inventory & Distribution</h2>
+        <p class="text-muted mb-0">Manage medicine stock levels and view recent prescriptions</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('add_medicine') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Add Medicine Stock
+        </a>
+        <a href="{{ url_for('prescribe_medicine') }}" class="btn btn-secondary">
+            <i class="bi bi-plus-circle me-1"></i> Prescribe / Dispense Medicine
+        </a>
+    </div>
+</div>
+
+<!-- Section 1: Inventory Table -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-semibold text-primary"><i class="bi bi-box-seam me-2"></i>Current Inventory</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Medicine Name</th>
+                        <th>Category</th>
+                        <th>Stock Quantity</th>
+                        <th>Unit</th>
+                        <th>Expiry Date</th>
+                        <th>Status / Reorder Alert</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if medicines %}
+                        {% for m in medicines %}
+                        <tr>
+                            <td class="fw-semibold">{{ m.medicine_name or '-' }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ m.category or 'General' }}</span></td>
+                            <td>
+                                <span class="fw-bold {% if m.reorder_level and m.stock_quantity <= m.reorder_level %}text-danger{% endif %}">
+                                    {{ m.stock_quantity }}
+                                </span>
+                            </td>
+                            <td>{{ m.unit or 'Tablets' }}</td>
+                            <td>{{ m.expiry_date.strftime('%d %b %Y') if m.expiry_date else '-' }}</td>
+                            <td>
+                                {% if m.reorder_level and m.stock_quantity <= m.reorder_level %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Reorder Alert (Low Stock)
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success">In Stock</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('edit_medicine', id=m.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil me-1"></i> Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-capsule fs-3 d-block mb-2"></i>
+                                No medicines registered in inventory.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: Recent Prescriptions -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-semibold text-secondary"><i class="bi bi-journal-check me-2"></i>Recent Prescriptions / Distribution</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Beneficiary</th>
+                        <th>Medicine</th>
+                        <th>Dosage</th>
+                        <th>Quantity Given</th>
+                        <th>Date Prescribed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if prescriptions %}
+                        {% for p in prescriptions %}
+                        <tr>
+                            <td class="fw-semibold">{{ p.beneficiary.full_name if p.beneficiary else '-' }}</td>
+                            <td>{{ p.medicine.medicine_name if p.medicine else '-' }}</td>
+                            <td>{{ p.dosage or '-' }}</td>
+                            <td>{{ p.quantity_dispensed if p.quantity_dispensed is not none else '-' }}</td>
+                            <td>{{ p.prescribed_date.strftime('%d %b %Y') if p.prescribed_date else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No recent prescriptions recorded.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

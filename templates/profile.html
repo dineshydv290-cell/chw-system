@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 700px;">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-0">
+            <h4 class="mb-0 text-primary fw-bold"><i class="bi bi-person-badge me-2"></i>User Profile</h4>
+        </div>
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <div class="display-4 text-secondary mb-2">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ user.full_name }}</h3>
+                <span class="badge bg-primary text-capitalize px-3 py-2 fs-6">{{ user.role.replace('_', ' ') }}</span>
+            </div>
+
+            <table class="table table-bordered align-middle">
+                <tbody>
+                    <tr>
+                        <th style="width: 35%;" class="bg-light">Username</th>
+                        <td>{{ user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Full Name</th>
+                        <td>{{ user.full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Role</th>
+                        <td class="text-capitalize">{{ user.role.replace('_', ' ') }}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Phone Number</th>
+                        <td>{{ user.phone or 'Not Provided' }}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Account Status</th>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Registered On</th>
+                        <td>{{ user.created_at.strftime('%d %b %Y') if user.created_at else '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

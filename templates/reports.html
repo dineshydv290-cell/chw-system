@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-file-earmark-bar-graph me-2"></i>Analytics & Report Export Engine</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-people fs-1 text-primary me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Beneficiary Master Report</h5>
+                        <small class="text-muted">Demographics, Health IDs, Address</small>
+                    </div>
+                </div>
+                <p class="card-text text-muted">Export complete beneficiary register with unique Health IDs, contact details, and household links.</p>
+                <a href="{{ url_for('export_report', report_type='beneficiaries') }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-heart-pulse fs-1 text-success me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Health Assessments Log</h5>
+                        <small class="text-muted">Vitals, BMI, BP, Hemoglobin</small>
+                    </div>
+                </div>
+                <p class="card-text text-muted">Export recorded health vitals history including BMI, BP readings, body temperature, and symptoms.</p>
+                <a href="{{ url_for('export_report', report_type='assessments') }}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-gender-female fs-1 text-danger me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Maternal Health Register</h5>
+                        <small class="text-muted">ANC, High-Risk Pregnancies, EDD</small>
+                    </div>
+                </div>
+                <p class="card-text text-muted">Export maternal records, expected delivery dates (EDD), ANC visit counts, and high-risk case tags.</p>
+                <a href="{{ url_for('export_report', report_type='maternal') }}" class="btn btn-outline-danger w-100">
+                    <i class="bi bi-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 border-start border-info border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-shield-plus fs-1 text-info me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Immunization Schedule</h5>
+                        <small class="text-muted">Vaccines, Due Dates, Status</small>
+                    </div>
+                </div>
+                <p class="card-text text-muted">Export immunization schedules, given dates, completed doses, and overdue vaccines list.</p>
+                <a href="{{ url_for('export_report', report_type='immunizations') }}" class="btn btn-outline-info w-100">
+                    <i class="bi bi-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 border-start border-warning border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-journal-medical fs-1 text-warning me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Home Visit Log</h5>
+                        <small class="text-muted">Visits, Observations, Status</small>
+                    </div>
+                </div>
+                <p class="card-text text-muted">Export field home visit schedules, observation notes, and follow-up flags.</p>
+                <a href="{{ url_for('export_report', report_type='visits') }}" class="btn btn-outline-warning w-100">
+                    <i class="bi bi-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 border-start border-secondary border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-hospital fs-1 text-secondary me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-0">Hospital Referrals Log</h5>
+                        <small class="text-muted">Escalations, Priority, Status</small>
+                    </div>
+                </div>
+                <p class="card-text text-muted">Export hospital referral records, emergency priority cases, and hospital outcomes.</p>
+                <a href="{{ url_for('export_report', report_type='referrals') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

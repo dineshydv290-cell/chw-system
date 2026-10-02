@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+*.log
+seed.sql
+schema.sql
+seed_now.py
+add_admin.py
+reset_passwords.py
+README.md

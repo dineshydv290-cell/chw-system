@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Immunization Schedule - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+        <h2 class="fw-bold text-primary-dark mb-1"><i class="bi bi-shield-plus me-2"></i>Immunization Schedule</h2>
+        <p class="text-muted mb-0">Track and update vaccination records for beneficiaries</p>
+    </div>
+    {% if can_schedule %}
+    <div class="flex-shrink-0">
+        <a href="{{ url_for('schedule_immunization') }}" class="btn btn-success">
+            <i class="bi bi-calendar-plus me-1"></i> Schedule Immunization
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filter Bar -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('immunizations') }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="status" class="form-label small fw-semibold">Filter by Status</label>
+                <select class="form-select" id="status" name="status" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" {% if request.args.get('status') == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Completed" {% if request.args.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Missed" {% if request.args.get('status') == 'Missed' %}selected{% endif %}>Missed</option>
+                    <option value="Overdue" {% if request.args.get('status') == 'Overdue' %}selected{% endif %}>Overdue</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ url_for('immunizations') }}" class="btn btn-outline-secondary w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Beneficiary</th>
+                        <th>Vaccine</th>
+                        <th>Dose #</th>
+                        <th>Scheduled Date</th>
+                        <th>Given Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if immunizations %}
+                        {% for imm in immunizations %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ imm.beneficiary.full_name if imm.beneficiary else '-' }}</div>
+                                {% if imm.beneficiary and imm.beneficiary.health_id %}
+                                    <small class="text-muted">ID: {{ imm.beneficiary.health_id }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="fw-semibold text-primary">{{ imm.vaccine.vaccine_name if imm.vaccine else '-' }}</td>
+                            <td>Dose {{ imm.vaccine.dose_number if imm.vaccine else 1 }}</td>
+                            <td>{{ imm.scheduled_date.strftime('%d %b %Y') if imm.scheduled_date else '-' }}</td>
+                            <td>{{ imm.given_date.strftime('%d %b %Y') if imm.given_date else '-' }}</td>
+                            <td>
+                                {% set shown = imm.display_status %}
+                                {% if shown == 'Pending' %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>
+                                {% elif shown == 'Completed' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Completed</span>
+                                {% elif shown == 'Missed' %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Missed</span>
+                                {% elif shown == 'Overdue' %}
+                                    <span class="badge bg-warning text-dark" style="background-color: #fd7e14 !important; color: white !important;"><i class="bi bi-exclamation-triangle me-1"></i>Overdue</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ shown }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if imm.status in ['Pending', 'Missed', 'Overdue'] and can_schedule %}
+                                    <form action="{{ url_for('update_immunization', id=imm.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="status" value="Completed">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="bi bi-check-lg me-1"></i> Mark Complete
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-shield-plus fs-3 d-block mb-2"></i>
+                                No immunization records found.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

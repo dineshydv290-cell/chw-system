@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Beneficiary Management - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+        <h2 class="fw-bold text-primary-dark mb-1"><i class="bi bi-people me-2"></i>Beneficiary Management</h2>
+        <p class="text-muted mb-0">Manage registered individuals and health profiles</p>
+    </div>
+    <div>
+        <a href="{{ url_for('add_beneficiary') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i> Register Beneficiary
+        </a>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('beneficiaries') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label small fw-semibold">Search by Name</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="search" name="search" value="{{ request.args.get('search', '') }}" placeholder="Beneficiary name...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="gender" class="form-label small fw-semibold">Filter by Gender</label>
+                <select class="form-select" id="gender" name="gender">
+                    <option value="">All Genders</option>
+                    <option value="Male" {% if request.args.get('gender') == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if request.args.get('gender') == 'Female' %}selected{% endif %}>Female</option>
+                    <option value="Other" {% if request.args.get('gender') == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="household_id" class="form-label small fw-semibold">Filter by Household</label>
+                <select class="form-select" id="household_id" name="household_id">
+                    <option value="">All Households</option>
+                    {% if households %}
+                        {% for h in households %}
+                        <option value="{{ h.id }}" {% if request.args.get('household_id')|string == h.id|string %}selected{% endif %}>
+                            {{ h.household_number }} - {{ h.head_name }}
+                        </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-filter me-1"></i> Filter</button>
+                <a href="{{ url_for('beneficiaries') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="beneficiariesTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Health ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Household</th>
+                        <th>Blood Group</th>
+                        <th>Disabled</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if beneficiaries %}
+                        {% for b in beneficiaries %}
+                        <tr>
+                            <td class="fw-semibold text-primary">{{ b.health_id or '-' }}</td>
+                            <td>
+                                <div class="fw-semibold">{{ b.full_name }}</div>
+                                {% if b.mobile %}
+                                    <small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ b.mobile }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if b.age is defined and b.age is not none %}
+                                    {{ b.age }} yrs
+                                {% elif b.dob %}
+                                    {{ b.dob.strftime('%d %b %Y') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if b.gender == 'Female' %}bg-info text-dark{% elif b.gender == 'Male' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                    {{ b.gender }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if b.household %}
+                                    {{ b.household.household_number }} ({{ b.household.head_name }})
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if b.blood_group %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">{{ b.blood_group }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if b.is_disabled %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-check-circle me-1"></i>Yes</span>
+                                {% else %}
+                                    <span class="text-muted">No</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('beneficiary_detail', id=b.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-eye me-1"></i> View Profile
+                                </a>
+                                <a href="{{ url_for('edit_beneficiary', id=b.id) }}" class="btn btn-sm btn-outline-secondary me-1">
+                                    <i class="bi bi-pencil me-1"></i> Edit
+                                </a>
+                                {% if session.get('role') in ['admin', 'supervisor'] %}
+                                <form action="{{ url_for('delete_beneficiary', id=b.id) }}" method="POST" class="d-inline"
+                                      onsubmit="return confirm('Delete {{ b.full_name }} and every record linked to them?');">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash me-1"></i> Delete
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="bi bi-people fs-3 d-block mb-2"></i>
+                                No beneficiaries found.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

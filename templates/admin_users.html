@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary-dark mb-0"><i class="bi bi-people-fill me-2"></i>User Management</h2>
+            <p class="text-muted mb-0">Assign roles and enable or disable system accounts</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">User</th>
+                            <th>Username</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary-main text-white d-flex align-items-center justify-content-center me-3"
+                                         style="width:38px;height:38px;font-weight:600;">
+                                        {{ u.full_name[:1]|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ u.full_name }}</div>
+                                        {% if u.id == session.get('user_id') %}
+                                        <small class="text-muted">This is you</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td><code>{{ u.username }}</code></td>
+                            <td>
+                                {% if u.phone %}
+                                    <span class="d-inline-block">{{ u.phone }}</span>
+                                {% else %}
+                                    <span class="text-muted fst-italic" id="phone-label-{{ u.id }}">not set</span>
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-link p-0 ms-1 text-decoration-none"
+                                        data-bs-toggle="collapse" data-bs-target="#phone-{{ u.id }}"
+                                        title="Add or change contact number">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <div class="collapse mt-1" id="phone-{{ u.id }}">
+                                    <form action="{{ url_for('admin_change_phone', id=u.id) }}"
+                                          method="POST" class="d-flex gap-1">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                        <input type="tel" name="phone" class="form-control form-control-sm"
+                                               placeholder="10-digit number" pattern="[0-9]{10}"
+                                               maxlength="10" value="{{ u.phone or '' }}"
+                                               aria-label="Contact number for {{ u.full_name }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                                    </form>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge {% if u.role == 'admin' %}bg-danger{% elif u.role == 'supervisor' %}bg-info{% else %}bg-primary{% endif %}">
+                                    {{ role_labels.get(u.role, u.role) }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if u.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Disabled</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">{{ u.created_at.strftime('%d %b %Y') if u.created_at else '—' }}</td>
+                            <td class="text-end pe-4">
+                                <div class="d-inline-flex gap-2 align-items-center">
+                                    <form action="{{ url_for('admin_change_role', id=u.id) }}" method="POST" class="d-inline-flex gap-2 align-items-center">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                        <select name="role" class="form-select form-select-sm" style="width:auto;">
+                                            {% for key, label in role_labels.items() %}
+                                            <option value="{{ key }}" {% if u.role == key %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                                    </form>
+                                    {% if u.id != session.get('user_id') %}
+                                    <form action="{{ url_for('admin_toggle_active', id=u.id) }}" method="POST">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit"
+                                                class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                                                onclick="return confirm('{% if u.is_active %}Disable{% else %}Enable{% endif %} {{ u.full_name }}'s account?');">
+                                            {% if u.is_active %}Disable{% else %}Enable{% endif %}
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Login - CHW Digital Records{% endblock %}
+
+{% block login_content %}
+<div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4 p-md-5">
+        <!-- Logo / Title Area -->
+        <div class="text-center mb-4">
+            <div class="login-logo-circle mx-auto mb-3 d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 72px; height: 72px; background-color: #0d6e6e !important;">
+                <i class="bi bi-heart-pulse-fill fs-1"></i>
+            </div>
+            <h3 class="fw-bold mb-1" style="color: #0d6e6e;">CHW Digital Record System</h3>
+            <p class="text-muted small mb-0">Community Health Worker Management</p>
+        </div>
+
+        <!-- Login Form -->
+        <form method="POST" action="{{ url_for('login') }}" class="needs-validation" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label for="username" class="form-label fw-semibold">
+                    <i class="bi bi-person me-1"></i> Username / ID
+                </label>
+                <input
+                    type="text"
+                    class="form-control form-control-lg"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    autocomplete="username"
+                    required
+                >
+                <div class="invalid-feedback">Please enter your username.</div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label fw-semibold">
+                    <i class="bi bi-lock me-1"></i> Password
+                </label>
+                <div class="input-group">
+                    <input
+                        type="password"
+                        class="form-control form-control-lg"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Toggle password visibility">
+                        <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                    </button>
+                </div>
+                <div class="invalid-feedback">Please enter your password.</div>
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-lg fw-semibold text-white" style="background-color: #0d6e6e;">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center mt-3">
+            <span class="text-muted small">Don't have an account?</span>
+            <a href="{{ url_for('register') }}" class="fw-bold text-decoration-none ms-1" style="color: #0d6e6e;">Register Here</a>
+        </div>
+
+        <!-- Roles in this system -->
+        <div class="mt-4 p-3 bg-light rounded border">
+            <div class="fw-bold text-muted small mb-2"><i class="bi bi-people me-1"></i> Roles in this system</div>
+            <ul class="text-muted small mb-0 ps-3">
+                <li><strong>System Administrator</strong> &mdash; full access, including User Management</li>
+                <li><strong>Community Health Worker</strong> &mdash; field data collection and vitals logging</li>
+                <li><strong>Medical Supervisor</strong> &mdash; referral approval and high-risk case review</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card-footer bg-transparent text-center py-3 text-muted small border-top">
+        <i class="bi bi-shield-lock me-1"></i> Secure access for authorized health workers only
+    </div>
+</div>
+
+<p class="text-center text-muted small mt-4">&copy; 2026 CHW Digital Records</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Toggle password visibility
+    const toggleBtn = document.getElementById('togglePassword');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function () {
+            const passwordField = document.getElementById('password');
+            const icon = document.getElementById('togglePasswordIcon');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        });
+    }
+</script>
+{% endblock %}

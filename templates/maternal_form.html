@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Register Maternal Record - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('maternal') }}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold text-primary-dark mb-0"><i class="bi bi-person-plus me-2"></i>Register Maternal Record</h2>
+                <p class="text-muted mb-0">Record pregnancy details and estimated delivery date</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form action="{{ url_for('add_maternal') }}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="beneficiary_id" class="form-label fw-semibold">Female Beneficiary <span class="text-danger">*</span></label>
+                            <select class="form-select" id="beneficiary_id" name="beneficiary_id" required>
+                                <option value="">Select Female Beneficiary</option>
+                                {% if female_beneficiaries %}
+                                    {% for b in female_beneficiaries %}
+                                    <option value="{{ b.id }}" {% if (preselected_id|string == b.id|string) or (request.args.get('beneficiary_id')|string == b.id|string) %}selected{% endif %}>
+                                        {{ b.full_name }} (Health ID: {{ b.health_id or 'N/A' }})
+                                    </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lmp_date" class="form-label fw-semibold">LMP Date (Last Menstrual Period) <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="lmp_date" name="lmp_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edd_date" class="form-label fw-semibold">Calculated EDD (Estimated Due Date)</label>
+                            <input type="date" class="form-control bg-light" id="edd_date" name="edd_date" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="hemoglobin" class="form-label fw-semibold">Hemoglobin Level (g/dL)</label>
+                            <input type="number" step="0.1" class="form-control" id="hemoglobin" name="hemoglobin" placeholder="e.g. 11.0">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="blood_pressure" class="form-label fw-semibold">Blood Pressure</label>
+                            <input type="text" class="form-control" id="blood_pressure" name="blood_pressure" placeholder="e.g. 120/80">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="is_high_risk" name="is_high_risk">
+                                <label class="form-check-label fw-semibold text-danger" for="is_high_risk">
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Flag as High-Risk Pregnancy
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-none" id="high_risk_reason_container">
+                            <label for="high_risk_reason" class="form-label fw-semibold">High Risk Reason / Medical Notes</label>
+                            <textarea class="form-control" id="high_risk_reason" name="high_risk_reason" rows="3" placeholder="Specify severe anemia, hypertension, history of complications, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('maternal') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i> Save Pregnancy Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const lmpInput = document.getElementById('lmp_date');
+        const eddInput = document.getElementById('edd_date');
+        const highRiskCheckbox = document.getElementById('is_high_risk');
+        const highRiskContainer = document.getElementById('high_risk_reason_container');
+
+        // Calculate EDD = LMP + 280 days
+        if (lmpInput && eddInput) {
+            lmpInput.addEventListener('change', function() {
+                if (this.value) {
+                    const lmp = new Date(this.value);
+                    const edd = new Date(lmp.getTime() + (280 * 24 * 60 * 60 * 1000));
+                    eddInput.value = edd.toISOString().split('T')[0];
+                } else {
+                    eddInput.value = '';
+                }
+            });
+        }
+
+        if (highRiskCheckbox && highRiskContainer) {
+            highRiskCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    highRiskContainer.classList.remove('d-none');
+                } else {
+                    highRiskContainer.classList.add('d-none');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

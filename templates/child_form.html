@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Register Child Record - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 700px;">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h4 class="mb-0 text-success fw-bold"><i class="bi bi-emoji-smile me-2"></i>Register Child Health Record</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="beneficiary_id" class="form-label fw-bold">Child Beneficiary <span class="text-danger">*</span></label>
+                    <select class="form-select" id="beneficiary_id" name="beneficiary_id" required>
+                        <option value="">-- Select Child Beneficiary --</option>
+                        {% for b in beneficiaries %}
+                            <option value="{{ b.id }}">{{ b.full_name }} (DOB: {{ b.dob.strftime('%d-%b-%Y') if b.dob else '-' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="mother_id" class="form-label fw-bold">Mother Beneficiary (Optional)</label>
+                    <select class="form-select" id="mother_id" name="mother_id">
+                        <option value="">-- Select Mother --</option>
+                        {% for m in mothers %}
+                            <option value="{{ m.id }}">{{ m.full_name }} (Health ID: {{ m.health_id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="birth_date" class="form-label fw-bold">Birth Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="birth_date" name="birth_date" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="birth_weight" class="form-label fw-bold">Birth Weight (kg)</label>
+                        <input type="number" step="0.01" class="form-control" id="birth_weight" name="birth_weight" placeholder="e.g. 2.8">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="immunization_status" class="form-label fw-bold">Immunization Status</label>
+                        <select class="form-select" id="immunization_status" name="immunization_status">
+                            <option value="Pending">Pending</option>
+                            <option value="Partial">Partial</option>
+                            <option value="Complete">Complete</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="growth_category" class="form-label fw-bold">Growth Category</label>
+                        <select class="form-select" id="growth_category" name="growth_category">
+                            <option value="Normal">Normal</option>
+                            <option value="Underweight">Underweight</option>
+                            <option value="Severely Underweight">Severely Underweight</option>
+                            <option value="Overweight">Overweight</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="feeding_type" class="form-label fw-bold">Feeding Type</label>
+                        <select class="form-select" id="feeding_type" name="feeding_type">
+                            <option value="Breastfed">Breastfed</option>
+                            <option value="Formula">Formula</option>
+                            <option value="Mixed">Mixed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('maternal') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success">Save Child Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

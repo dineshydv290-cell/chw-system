@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0"><i class="bi bi-hospital me-2"></i>Create Hospital Referral</h4>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('add_referral') }}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label">Select Patient / Beneficiary <span class="text-danger">*</span></label>
+                        <select name="beneficiary_id" class="form-select" required>
+                            <option value="">-- Choose Beneficiary --</option>
+                            {% for b in beneficiaries %}
+                            <option value="{{ b.id }}">{{ b.full_name }} ({{ b.health_id }}) - DOB: {{ b.dob }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Referred Hospital Name <span class="text-danger">*</span></label>
+                        <input type="text" name="hospital_name" class="form-control" placeholder="e.g. District Civil Hospital, Primary Health Centre (PHC)" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Priority Level <span class="text-danger">*</span></label>
+                        <select name="priority" class="form-select" required>
+                            <option value="Low">Low - Routine Consultation</option>
+                            <option value="Medium" selected>Medium - Secondary Evaluation</option>
+                            <option value="High">High - Urgent Specialist Care</option>
+                            <option value="Emergency">Emergency - Immediate Transfer Required</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Referral & Clinical Notes <span class="text-danger">*</span></label>
+                        <textarea name="reason" class="form-control" rows="4" placeholder="Detail symptoms, Hb drops, high blood pressure, or complication details..." required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('referrals') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>Submit Referral</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

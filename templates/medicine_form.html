@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Medicine' if medicine else 'Add Medicine' }} - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('medicines') }}" class="btn btn-outline-secondary me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold text-primary-dark mb-0">
+                    <i class="bi bi-{% if medicine %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+                    {{ 'Edit Medicine' if medicine else 'Add New Medicine' }}
+                </h2>
+                <p class="text-muted mb-0">
+                    {% if medicine %}Updating stock for {{ medicine.medicine_name }}
+                    {% else %}Add a new medicine to the inventory stock{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form action="{% if medicine %}{{ url_for('edit_medicine', id=medicine.id) }}{% else %}{{ url_for('add_medicine') }}{% endif %}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="medicine_name" class="form-label fw-semibold">Medicine Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="medicine_name" name="medicine_name" required
+                                   value="{{ medicine.medicine_name if medicine else '' }}" placeholder="e.g. Paracetamol 500mg">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="form-label fw-semibold">Category</label>
+                            <input type="text" class="form-control" id="category" name="category"
+                                   value="{{ medicine.category if medicine else '' }}" placeholder="e.g. Analgesic, Antibiotic, Vitamin">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="stock_quantity" class="form-label fw-semibold">
+                                {% if medicine %}Current Stock{% else %}Initial Stock Quantity{% endif %} <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" required min="0"
+                                   value="{{ medicine.stock_quantity if medicine else '' }}" placeholder="100">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="unit" class="form-label fw-semibold">Unit <span class="text-danger">*</span></label>
+                            <select class="form-select" id="unit" name="unit" required>
+                                {% for u in ['Tablets','Capsules','Syrup','Injection','Ointment','Sachets','Drops'] %}
+                                <option value="{{ u }}" {% if medicine and medicine.unit == u %}selected{% endif %}>{{ u }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="reorder_level" class="form-label fw-semibold">Reorder Alert Level</label>
+                            <input type="number" class="form-control" id="reorder_level" name="reorder_level" min="0"
+                                   value="{{ medicine.reorder_level if medicine else '' }}" placeholder="e.g. 20">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="expiry_date" class="form-label fw-semibold">Expiry Date</label>
+                            <input type="date" class="form-control" id="expiry_date" name="expiry_date"
+                                   value="{{ medicine.expiry_date.strftime('%Y-%m-%d') if medicine and medicine.expiry_date else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if medicine and session.get('role') in ['admin', 'supervisor'] %}
+                            <button type="submit" class="btn btn-outline-danger"
+                                    formaction="{{ url_for('delete_medicine', id=medicine.id) }}"
+                                    formmethod="POST"
+                                    onclick="return confirm('Remove {{ medicine.medicine_name }} from the inventory?');">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('medicines') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>
+                                {{ 'Save Changes' if medicine else 'Save Medicine' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

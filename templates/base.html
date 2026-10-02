@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CHW Digital Records{% endblock %}</title>
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- DataTables CSS (for tabular data screens) -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if session.get('user_id') %}
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header d-flex align-items-center justify-content-between p-3 border-bottom border-light-subtle">
+            <a href="{{ url_for('dashboard') }}" class="d-flex align-items-center text-white text-decoration-none fw-bold fs-5">
+                <i class="bi bi-heart-pulse-fill text-warning me-2"></i>
+                <span>CHW Digital</span>
+            </a>
+            <button class="btn btn-link text-white d-md-none p-0 border-0" id="sidebarCloseBtn" type="button" aria-label="Close Sidebar">
+                <i class="bi bi-x-lg fs-4"></i>
+            </button>
+        </div>
+
+        <ul class="nav flex-column sidebar-nav p-2">
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="/dashboard">
+                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'households' %}active{% endif %}" href="/households">
+                    <i class="bi bi-houses me-2"></i> Households
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'beneficiaries' %}active{% endif %}" href="/beneficiaries">
+                    <i class="bi bi-people me-2"></i> Beneficiaries
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'assessments' %}active{% endif %}" href="/assessments">
+                    <i class="bi bi-heart-pulse me-2"></i> Health Assessments
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'maternal' %}active{% endif %}" href="/maternal">
+                    <i class="bi bi-gender-female me-2"></i> Maternal &amp; Child
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'immunizations' %}active{% endif %}" href="/immunizations">
+                    <i class="bi bi-shield-plus me-2"></i> Immunizations
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'medicines' %}active{% endif %}" href="/medicines">
+                    <i class="bi bi-capsule me-2"></i> Medicines
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'visits' %}active{% endif %}" href="/visits">
+                    <i class="bi bi-journal-medical me-2"></i> Home Visits
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'referrals' %}active{% endif %}" href="/referrals">
+                    <i class="bi bi-hospital me-2"></i> Referrals
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}" href="/reports">
+                    <i class="bi bi-file-earmark-bar-graph me-2"></i> Reports
+                </a>
+            </li>
+            {% if session.get('role') == 'admin' %}
+            <li class="nav-item mb-1">
+                <a class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" href="/admin/users">
+                    <i class="bi bi-people-fill me-2"></i> User Management
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay d-md-none"></div>
+
+    <!-- Main Wrapper for Logged-In Users -->
+    <div class="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="navbar navbar-expand bg-white shadow-sm sticky-top px-3">
+            <div class="container-fluid p-0">
+                <button class="btn btn-outline-secondary d-md-none me-2" id="sidebarToggleBtn" type="button" aria-label="Toggle Sidebar">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <span class="navbar-brand mb-0 h1 text-primary-dark fw-bold d-none d-sm-inline-block">CHW Digital Records</span>
+                <span class="navbar-brand mb-0 h1 text-primary-dark fw-bold d-inline-block d-sm-none fs-6">CHW Records</span>
+
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle fs-5 text-primary-main"></i>
+                            <span class="d-none d-md-inline">{{ session.get('full_name') or session.get('user_name', 'Health Worker') }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-menu-header px-3 py-1 d-block text-muted text-decoration-none small">
+                                    Role: <span class="fw-semibold">{{ role_labels.get(session.get('role'), 'Health Worker') }}</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i> Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="content-wrapper p-3 p-md-4">
+            <!-- Flash Messages -->
+            <div class="flash-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category in ['success', 'danger', 'warning', 'info'] else 'info' }} alert-dismissible fade show shadow-sm" role="alert">
+                                {% if category == 'success' %}
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                {% elif category == 'danger' %}
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                {% elif category == 'warning' %}
+                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                {% endif %}
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer bg-white border-top py-3 text-center text-muted small mt-auto">
+            <div class="container-fluid">
+                <span>&copy; {{ current_year if current_year else '2026' }} CHW Digital Records. Community Health Worker Management System.</span>
+            </div>
+        </footer>
+    </div>
+
+{% else %}
+    <!-- Full-width layout for logged-out / login screens -->
+    <main class="login-wrapper d-flex align-items-center justify-content-center min-vh-100 bg-light p-3">
+        <div class="w-100" style="max-width: 440px;">
+            <!-- Flash Messages -->
+            <div class="flash-container mb-3">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category in ['success', 'danger', 'warning', 'info'] else 'danger' }} alert-dismissible fade show shadow-sm" role="alert">
+                                {% if category == 'success' %}
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                {% endif %}
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            {% block login_content %}{% endblock %}
+        </div>
+    </main>
+{% endif %}
+
+<!-- Bootstrap 5.3 Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<!-- jQuery (required for DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

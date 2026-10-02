@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Household Registry - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+        <h2 class="fw-bold text-primary-dark mb-1"><i class="bi bi-houses me-2"></i>Household Registry</h2>
+        <p class="text-muted mb-0">Manage registered households and family units</p>
+    </div>
+    <div>
+        <a href="{{ url_for('add_household') }}" class="btn btn-primary">
+            <i class="bi bi-house-add me-1"></i> Add Household
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="householdsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Household #</th>
+                        <th>Head Name</th>
+                        <th>Area</th>
+                        <th>Ward</th>
+                        <th>Contact</th>
+                        <th>Members</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if households %}
+                        {% for h in households %}
+                        <tr>
+                            <td class="fw-semibold">{{ h.household_number }}</td>
+                            <td>{{ h.head_name }}</td>
+                            <td>{{ h.area or '-' }}</td>
+                            <td>{{ h.ward or '-' }}</td>
+                            <td>{{ h.contact_no or '-' }}</td>
+                            <td>
+                                <span class="badge bg-secondary rounded-pill">
+                                    {{ h.beneficiaries|length }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('beneficiaries') }}?household_id={{ h.id }}" class="btn btn-sm btn-outline-info me-1" title="View Members">
+                                    <i class="bi bi-people me-1"></i> View Members
+                                </a>
+                                <a href="{{ url_for('edit_household', id=h.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Edit Household">
+                                    <i class="bi bi-pencil me-1"></i> Edit
+                                </a>
+                                {% if session.get('role') in ['admin', 'supervisor'] %}
+                                <form action="{{ url_for('delete_household', id=h.id) }}" method="POST" class="d-inline"
+                                      onsubmit="return confirm('Delete household {{ h.household_number }} and all its members?');">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Household">
+                                        <i class="bi bi-trash me-1"></i> Delete
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-houses fs-3 d-block mb-2"></i>
+                                No households registered yet. Click "Add Household" to create one.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        if ($('#householdsTable tbody tr').length > 1 || !$('#householdsTable tbody tr td').hasClass('text-center')) {
+            $('#householdsTable').DataTable({
+                pageLength: 10,
+                responsive: true
+            });
+        }
+    });
+</script>
+{% endblock %}

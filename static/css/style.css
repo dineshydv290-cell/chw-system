@@ -1,0 +1,378 @@
+/* ==========================================================================
+   CHW Digital Records - Custom Stylesheet
+   Community Health Worker Management System
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties (Color Scheme)
+   -------------------------------------------------------------------------- */
+:root {
+    --primary: #0d6e6e;
+    --primary-dark: #095555;
+    --primary-light: #1a9e9e;
+    --primary-lighter: #e0f2f2;
+    --accent: #e8f5e9;
+    --accent-dark: #c8e6c9;
+
+    --sidebar-bg: #0a5c5c;
+    --sidebar-hover: #084a4a;
+    --sidebar-active: var(--primary-light);
+    --sidebar-width: 260px;
+
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-white: #ffffff;
+    --text-muted: #858d94;
+
+    --border-color: #dee2e6;
+
+    --stat-blue: #0d6efd;
+    --stat-green: #198754;
+    --stat-orange: #fd7e14;
+    --stat-red: #dc3545;
+    --stat-teal: var(--primary);
+    --stat-purple: #6f42c1;
+}
+
+/* --------------------------------------------------------------------------
+   Global / Body
+   -------------------------------------------------------------------------- */
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f4f6f9;
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+/* --------------------------------------------------------------------------
+   Primary Color Utility Classes
+   -------------------------------------------------------------------------- */
+.bg-primary-main { background-color: var(--primary) !important; }
+.bg-primary-dark { background-color: var(--primary-dark) !important; }
+.text-primary-main { color: var(--primary) !important; }
+.text-primary-dark { color: var(--primary-dark) !important; }
+.btn-primary-main {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--text-white);
+}
+.btn-primary-main:hover,
+.btn-primary-main:focus {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: var(--text-white);
+}
+.btn-outline-primary-main {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+.btn-outline-primary-main:hover,
+.btn-outline-primary-main:focus {
+    background-color: var(--primary);
+    color: var(--text-white);
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    z-index: 1040;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+    background-color: var(--primary-dark);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.78);
+    padding: 0.6rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.92rem;
+    transition: background 0.2s, color 0.2s, padding-left 0.2s;
+}
+.sidebar-nav .nav-link i {
+    width: 1.4em;
+    text-align: center;
+    font-size: 1.05rem;
+}
+.sidebar-nav .nav-link:hover {
+    background-color: var(--sidebar-hover);
+    color: #fff;
+    padding-left: 1.3rem;
+}
+.sidebar-nav .nav-link.active {
+    background-color: var(--sidebar-active);
+    color: #fff;
+    font-weight: 600;
+}
+.sidebar-nav .nav-link.active i {
+    color: #fff;
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1035;
+    display: none;
+}
+.sidebar-overlay.show {
+    display: block;
+}
+
+/* --------------------------------------------------------------------------
+   Main Wrapper / Content
+   -------------------------------------------------------------------------- */
+.main-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+}
+
+.content-wrapper {
+    flex: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Top Navbar
+   -------------------------------------------------------------------------- */
+.navbar {
+    z-index: 1030;
+    border-bottom: 2px solid var(--primary-lighter);
+}
+
+#userDropdown {
+    font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.footer {
+    border-top: 1px solid var(--border-color);
+}
+
+/* --------------------------------------------------------------------------
+   Dashboard Stat Cards
+   -------------------------------------------------------------------------- */
+.stat-card {
+    border: none;
+    border-left: 4px solid transparent;
+    border-radius: 0.5rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.4rem 1.2rem rgba(0,0,0,0.1) !important;
+}
+.stat-card.border-blue   { border-left-color: var(--stat-blue); }
+.stat-card.border-green  { border-left-color: var(--stat-green); }
+.stat-card.border-orange { border-left-color: var(--stat-orange); }
+.stat-card.border-red    { border-left-color: var(--stat-red); }
+.stat-card.border-teal   { border-left-color: var(--stat-teal); }
+.stat-card.border-purple { border-left-color: var(--stat-purple); }
+
+.stat-card .stat-icon {
+    font-size: 2rem;
+    opacity: 0.25;
+}
+.stat-card .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.stat-card .stat-label {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   Status Badges
+   -------------------------------------------------------------------------- */
+.badge-active {
+    background-color: #198754 !important;
+    color: #fff;
+}
+.badge-pending {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+.badge-high-risk {
+    background-color: #dc3545 !important;
+    color: #fff;
+}
+.badge-completed {
+    background-color: #0d6efd !important;
+    color: #fff;
+}
+.badge-referred {
+    background-color: #6f42c1 !important;
+    color: #fff;
+}
+.badge-inactive {
+    background-color: #6c757d !important;
+    color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+.table thead th {
+    background-color: var(--primary-lighter);
+    color: var(--primary-dark);
+    font-weight: 600;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border-bottom: 2px solid var(--primary);
+    white-space: nowrap;
+}
+.table tbody tr:hover {
+    background-color: rgba(13, 110, 110, 0.04);
+}
+.table .btn-sm {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.5rem;
+}
+
+/* DataTables overrides */
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 0.375rem;
+    border: 1px solid var(--border-color);
+    padding: 0.3rem 0.6rem;
+}
+
+/* --------------------------------------------------------------------------
+   Forms
+   -------------------------------------------------------------------------- */
+.form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 110, 0.2);
+}
+.form-control::placeholder {
+    color: #adb5bd;
+}
+
+/* Section headings inside forms */
+.form-section-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    border-bottom: 2px solid var(--primary-lighter);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Cards (general)
+   -------------------------------------------------------------------------- */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+}
+.card-header {
+    font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Login Page
+   -------------------------------------------------------------------------- */
+.login-wrapper {
+    background: linear-gradient(135deg, var(--primary-lighter) 0%, #f4f6f9 40%, #f4f6f9 100%);
+}
+.login-logo-circle {
+    box-shadow: 0 4px 14px rgba(13, 110, 110, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   Flash / Alert Animations
+   -------------------------------------------------------------------------- */
+.flash-container .alert {
+    animation: slideInDown 0.35s ease-out;
+}
+@keyframes slideInDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------------------------
+   Error Pages (404, 500)
+   -------------------------------------------------------------------------- */
+.error-page-icon {
+    font-size: 5rem;
+    color: var(--primary-light);
+    opacity: 0.6;
+}
+.error-page-code {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+}
+
+/* --------------------------------------------------------------------------
+   Print Styles
+   -------------------------------------------------------------------------- */
+@media print {
+    .sidebar,
+    .sidebar-overlay,
+    .navbar,
+    .footer,
+    .no-print,
+    .btn,
+    .alert {
+        display: none !important;
+    }
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
+    .content-wrapper {
+        padding: 0 !important;
+    }
+    body {
+        background: #fff;
+        font-size: 12pt;
+    }
+    .table thead th {
+        background-color: #eee !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Breakpoints
+   -------------------------------------------------------------------------- */
+
+/* Tablets and below: sidebar collapses off-screen */
+@media (max-width: 767.98px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    .main-wrapper {
+        margin-left: 0;
+    }
+}

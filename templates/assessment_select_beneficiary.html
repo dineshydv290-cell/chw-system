@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Select Beneficiary for Assessment - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 600px;">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h4 class="mb-0 text-primary fw-bold"><i class="bi bi-heart-pulse me-2"></i>Add Health Assessment</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-4">
+                    <label for="beneficiary_id" class="form-label fw-bold">Select Beneficiary <span class="text-danger">*</span></label>
+                    <select class="form-select" id="beneficiary_id" name="beneficiary_id" required>
+                        <option value="">-- Choose a Beneficiary --</option>
+                        {% for b in beneficiaries %}
+                            <option value="{{ b.id }}">{{ b.full_name }} (Health ID: {{ b.health_id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('assessments') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Proceed to Assessment Form</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

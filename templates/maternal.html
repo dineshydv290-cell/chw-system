@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Maternal & Child Health - CHW Digital Records{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <div>
+        <h2 class="fw-bold text-primary-dark mb-1"><i class="bi bi-gender-female me-2"></i>Maternal & Child Health</h2>
+        <p class="text-muted mb-0">Track pregnancy records, ANC visits, and child health status</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('add_maternal') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Register Pregnancy
+        </a>
+        <a href="{{ url_for('add_child') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Register Child Record
+        </a>
+    </div>
+</div>
+
+<!-- Section 1: Maternal Records -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-semibold text-primary"><i class="bi bi-person-heart me-2"></i>Maternal Records</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Beneficiary Name</th>
+                        <th>LMP Date</th>
+                        <th>EDD Date</th>
+                        <th>ANC Visits</th>
+                        <th>Hemoglobin</th>
+                        <th>High Risk</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if maternal_records %}
+                        {% for m in maternal_records %}
+                        <tr>
+                            <td class="fw-semibold">{{ m.beneficiary.full_name if m.beneficiary else '-' }}</td>
+                            <td>{{ m.lmp_date.strftime('%d %b %Y') if m.lmp_date else '-' }}</td>
+                            <td>{{ m.edd_date.strftime('%d %b %Y') if m.edd_date else '-' }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ m.anc_visits_count or 0 }}</span>
+                            </td>
+                            <td>{{ m.hemoglobin or '-' }} g/dL</td>
+                            <td>
+                                {% if m.is_high_risk %}
+                                    <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>High Risk</span>
+                                {% else %}
+                                    <span class="badge bg-success">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark">{{ m.status or 'Active' }}</span>
+                            </td>
+                            <td class="text-end">
+                                {% if m.beneficiary %}
+                                    <a href="{{ url_for('beneficiary_detail', id=m.beneficiary.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="bi bi-gender-female fs-3 d-block mb-2"></i>
+                                No maternal records found.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: Child Records -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-semibold text-success"><i class="bi bi-emoji-smile me-2"></i>Child Health Records</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Child Name</th>
+                        <th>Mother Name</th>
+                        <th>DOB</th>
+                        <th>Gender</th>
+                        <th>Birth Weight</th>
+                        <th>Immunization Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if child_records %}
+                        {% for c in child_records %}
+                        <tr>
+                            <td class="fw-semibold">{{ c.beneficiary.full_name if c.beneficiary else '-' }}</td>
+                            <td>{{ c.mother.full_name if c.mother else '-' }}</td>
+                            <td>{{ c.birth_date.strftime('%d %b %Y') if c.birth_date else '-' }}</td>
+                            <td>
+                                {% set child_gender = c.beneficiary.gender if c.beneficiary else None %}
+                                <span class="badge {% if child_gender == 'Female' %}bg-info text-dark{% else %}bg-primary{% endif %}">
+                                    {{ child_gender or '-' }}
+                                </span>
+                            </td>
+                            <td>{{ '%.1f'|format(c.birth_weight) if c.birth_weight else '-' }}{% if c.birth_weight %} kg{% endif %}</td>
+                            <td>
+                                <span class="badge bg-success">{{ c.immunization_status or 'Up to Date' }}</span>
+                            </td>
+                            <td class="text-end">
+                                {% if c.beneficiary_id %}
+                                    <a href="{{ url_for('beneficiary_detail', id=c.beneficiary_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-emoji-smile fs-3 d-block mb-2"></i>
+                                No child records found.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

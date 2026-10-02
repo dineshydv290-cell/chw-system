@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Register - CHW Digital Records{% endblock %}
+
+{% block login_content %}
+<div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4 p-md-5">
+        <!-- Logo / Title Area -->
+        <div class="text-center mb-4">
+            <div class="login-logo-circle mx-auto mb-3 d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 72px; height: 72px; background-color: #0d6e6e !important;">
+                <i class="bi bi-person-plus-fill fs-1"></i>
+            </div>
+            <h3 class="fw-bold mb-1" style="color: #0d6e6e;">Create New Account</h3>
+            <p class="text-muted small mb-0">CHW Digital Record System</p>
+        </div>
+
+        <!-- Registration Form -->
+        <form method="POST" action="{{ url_for('register') }}" class="needs-validation" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label for="username" class="form-label fw-semibold">
+                    <i class="bi bi-person me-1"></i> Username <span class="text-danger">*</span>
+                </label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="username"
+                    name="username"
+                    placeholder="e.g. healthworker2"
+                    required
+                >
+                <div class="invalid-feedback">Please enter a username.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="full_name" class="form-label fw-semibold">
+                    <i class="bi bi-card-heading me-1"></i> Full Name <span class="text-danger">*</span>
+                </label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="full_name"
+                    name="full_name"
+                    placeholder="e.g. Anita Sharma"
+                    required
+                >
+                <div class="invalid-feedback">Please enter your full name.</div>
+            </div>
+
+            <div class="mb-3">
+                <!-- Role is not chosen here. Self-registration always creates a
+                     Community Health Worker; an administrator assigns a higher
+                     role later from User Management. -->
+                <div class="alert alert-light border small text-muted mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    New accounts are created as <strong>Community Health Worker</strong>.
+                    An administrator can change the role later from User Management.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label fw-semibold">
+                    <i class="bi bi-telephone me-1"></i> Phone Number
+                </label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="phone"
+                    name="phone"
+                    placeholder="10-digit mobile number"
+                >
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label fw-semibold">
+                    <i class="bi bi-lock me-1"></i> Password <span class="text-danger">*</span>
+                </label>
+                <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    name="password"
+                    placeholder="Enter a strong password"
+                    required
+                >
+                <div class="invalid-feedback">Please enter a password.</div>
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-lg fw-semibold text-white" style="background-color: #0d6e6e;">
+                    <i class="bi bi-check-circle me-2"></i> Register Account
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center mt-3">
+            <span class="text-muted small">Already have an account?</span>
+            <a href="{{ url_for('login') }}" class="fw-bold text-decoration-none ms-1" style="color: #0d6e6e;">Login Here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
